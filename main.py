@@ -5,8 +5,7 @@ from generate_data import *
 
 
 x_train = random_vectors(10)
-y_train = torch.tensor([test_if_in_circle(vect) for vect in x_train])
-training_data = [(x_train[i], y_train[i]) for i in range(len(x_train))]
+y_train = torch.tensor([test_if_in_circle(vect) for vect in x_train],requires_grad=True)
 
 
 # Create an instance of the model
@@ -25,22 +24,22 @@ num_epochs = 10
 
 for epoch in range(num_epochs):
     running_loss = 0.0
-    for i, data in enumerate(training_data):
-        inputs, labels = data
+    
+    optimizer.zero_grad()
 
-        optimizer.zero_grad()
+    # Forward pass
+    outputs = model(x_train)
+    #print(outputs)
+    #print(y_train)
+    loss = loss_function(outputs, y_train)
 
-        # Forward pass
-        outputs = model(inputs)
-        loss = loss_function(outputs, labels)
+    # Backward pass and optimization
+    loss.backward()
+    optimizer.step()
 
-        # Backward pass and optimization
-        loss.backward()
-        optimizer.step()
+    running_loss += loss.item()
 
-        running_loss += loss.item()
-
-    print(f"Epoch {epoch + 1}, Loss: {running_loss / len(trainloader)}")
+    print(f"Epoch {epoch + 1}, Loss: {running_loss / len(x_train)}")
 print("Finished Training")
 
 
