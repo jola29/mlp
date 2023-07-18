@@ -55,17 +55,38 @@ total = 0
 with torch.no_grad(): #stops doing gradient computation, i.e. training of the model
     x_test = random_vectors(number_of_test_data)
     y_test = torch.tensor([test_if_in_circle(vect) for vect in x_test],requires_grad=True)
-
+   
     outputs = model(x_test)
     _, pred = torch.max(outputs.data, 1)#gives index of maximum value
     predicted = torch.tensor([[(1.0+i)%2 ,(0.0+i)%2] for i in pred])#use those indices to create a vecor similar to those in y_test 
     total = y_test.size(0)
-    correct = len([predicted[i] == y_test[i] for i in range(len(predicted))])
+    correct,counter = 0,0
+    for elem in predicted:
+        if torch.equal(elem, y_test[counter]):
+            correct += 1
+        counter += 1
+    #correct = len([torch.eq(predicted[i], y_test[i]) for i in range(len(predicted))])
+    #print(f'{predicted[1]} and actually its {y_test[1]}')
+    #print( torch.equal(predicted[1], y_test[1]) )
 
 print(f"Accuracy: {100 * correct / total}%")
-
+#angeblich 100% mit ReLU aber problem für punkte mit großen x und y koordinaten
+#probiere mal softmax
 
 torch.save(model.state_dict(), 'trained_model.pth')#save the model
+with torch.no_grad():
+    x_1 = 0.99999999
+    x_2 = 0.99999999
+    x = torch.tensor([x_1,x_2])
+    failvector = x.unsqueeze(0)
+
+    out = model(failvector)
+    print(f"Output: {out}")
+    _, index = torch.max(out,1)
+    prediction = torch.tensor([(1.0+index)%2 ,(0.0+index)%2])
+    print(f"Prediction: {prediction}")
+    print(f"truth: {test_if_in_circle(x)}")
+
 
 
 
