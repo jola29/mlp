@@ -24,22 +24,26 @@ optimizer = optim.SGD(model.parameters(), lr=0.01)
 
 
 num_epochs = 10
+batch_size = 100
 
-for epoch in range(num_epochs):
+for epoch in range(num_epochs):    
     running_loss = 0.0
+    # Create batches from the dataset
+    for i in range(0, number_of_training_data, batch_size):
+        inputs = x_train[i:i + batch_size]
+        labels = y_train[i:i + batch_size]
     
-    optimizer.zero_grad()
+    
+        optimizer.zero_grad()
 
-    # Forward pass
-    outputs = model(x_train)
-    #print(outputs)
-    #print(y_train)
-    loss = loss_function(outputs, y_train)
-    # Backward pass and optimization
-    loss.backward()
-    optimizer.step()
+        # Forward pass
+        outputs = model(inputs)
+        loss = loss_function(outputs, labels)
+        # Backward pass and optimization
+        loss.backward()
+        optimizer.step()
 
-    running_loss += loss.item()
+        running_loss += loss.item()
 
     print(f"Epoch {epoch + 1}, Loss: {running_loss / len(x_train)}")
 print("Finished Training")
@@ -65,27 +69,24 @@ with torch.no_grad(): #stops doing gradient computation, i.e. training of the mo
         if torch.equal(elem, y_test[counter]):
             correct += 1
         counter += 1
-    #correct = len([torch.eq(predicted[i], y_test[i]) for i in range(len(predicted))])
-    #print(f'{predicted[1]} and actually its {y_test[1]}')
-    #print( torch.equal(predicted[1], y_test[1]) )
-
+    
 print(f"Accuracy: {100 * correct / total}%")
 #angeblich 100% mit ReLU aber problem für punkte mit großen x und y koordinaten
 #probiere mal softmax
 
-torch.save(model.state_dict(), 'trained_model.pth')#save the model
-with torch.no_grad():
-    x_1 = 0.99999999
-    x_2 = 0.99999999
-    x = torch.tensor([x_1,x_2])
-    failvector = x.unsqueeze(0)
+#torch.save(model.state_dict(), 'trained_model.pth')#save the model
+#with torch.no_grad():
+#    x_1 = 0.99999999
+#    x_2 = 0.99999999
+#    x = torch.tensor([x_1,x_2])
+#    failvector = x.unsqueeze(0)
 
-    out = model(failvector)
-    print(f"Output: {out}")
-    _, index = torch.max(out,1)
-    prediction = torch.tensor([(1.0+index)%2 ,(0.0+index)%2])
-    print(f"Prediction: {prediction}")
-    print(f"truth: {test_if_in_circle(x)}")
+#    out = model(failvector)
+#    print(f"Output: {out}")
+#    _, index = torch.max(out,1)
+#    prediction = torch.tensor([(1.0+index)%2 ,(0.0+index)%2])
+#    print(f"Prediction: {prediction}")
+#    print(f"truth: {test_if_in_circle(x)}")
 
 
 
